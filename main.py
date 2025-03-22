@@ -1,6 +1,4 @@
-def main():
-    print("Hello from reffer!")
+import streamlit as st
 
-
-if __name__ == "__main__":
-    main()
+st.set_page_config(layout="wide", page_title="Reffer")
+st.title("Reffer: A Complete Reference Manager")
