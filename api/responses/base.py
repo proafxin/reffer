@@ -1,5 +1,8 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
 class Base(BaseModel):
-    pass
+    created_at: datetime
+    updated_at: datetime
