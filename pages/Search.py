@@ -10,7 +10,6 @@ username = os.environ["MONGO_USER"]
 password = os.environ["MONGO_PASSWORD"]
 host = os.environ["MONGO_HOST"]
 dbname = os.environ["MONGO_DBNAME"]
-port = os.environ["MONGO_PORT"]
 collection = os.environ["MONGO_COLLECTION"]
 
 
