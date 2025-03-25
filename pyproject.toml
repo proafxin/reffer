@@ -1,14 +1,14 @@
 [project]
 name = "reffer"
 version = "0.1.0"
-description = "Full reference management system"
+description = "A community based open source reference solution, specially for LaTeX."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "bibtexparser>=1.4.3",
-    "motor[encryption,ocsp,zstd]>=3.7.0",
     "polars>=1.25.2",
     "pydantic>=2.10.6",
+    "pymongo[encryption,zstd]>=4.11.3",
     "streamlit>=1.43.2",
 ]
 
@@ -71,3 +71,12 @@ docstring-code-line-length = "dynamic"
 [[tool.mypy.overrides]]
 module = "bibtexparser"
 ignore_missing_imports = true
+
+
+[[tool.mypy.overrides]]
+module = "bson"
+ignore_missing_imports = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
