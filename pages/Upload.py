@@ -14,7 +14,6 @@ username = os.environ["MONGO_USER"]
 password = os.environ["MONGO_PASSWORD"]
 host = os.environ["MONGO_HOST"]
 dbname = os.environ["MONGO_DBNAME"]
-port = os.environ["MONGO_PORT"]
 collection = os.environ["MONGO_COLLECTION"]
 
 
@@ -34,13 +33,8 @@ if "couch" not in st.session_state:
 bib_file = st.file_uploader(label="Upload bib file", type=["bib"])
 
 
-def show_entry(entry: dict[str, str | list[str]]):
-    for key, value in entry.items():
-        st.write(f"**{key}**: {value}")
-
-
-def write_entries(bibentries: list[dict[str, str | list[str]]]):
-    documents: dict[str, dict[str, str | list[str]]] = {}
+def write_entries(bibentries: list[dict[str, str]]):
+    documents: dict[str, dict[str, str]] = {}
     for entry in bibentries:
         objectid = str(ObjectId())
         documents[objectid] = entry

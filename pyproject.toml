@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "bibtexparser>=1.4.3",
+    "bson>=0.5.10",
     "couchbase>=4.3.5",
     "polars>=1.25.2",
     "pydantic>=2.10.6",
