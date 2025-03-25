@@ -1,7 +1,7 @@
 [project]
 name = "reffer"
 version = "0.1.0"
-description = "A community based open source reference solution, specially for LaTeX."
+description = "A community based open source reference solution."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
