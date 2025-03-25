@@ -9,7 +9,6 @@ dependencies = [
     "couchbase>=4.3.5",
     "polars>=1.25.2",
     "pydantic>=2.10.6",
-    "pymongo[encryption,zstd]>=4.11.3",
     "streamlit>=1.43.2",
 ]
 
