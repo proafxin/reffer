@@ -193,6 +193,20 @@ wheels = [
 ]
 
 [[package]]
+name = "couchbase"
+version = "4.3.5"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/31/6d/560ce2b7a93c6d90777008f39616e86bdf6c0f9bdcff685f7047d71786a6/couchbase-4.3.5.tar.gz", hash = "sha256:2e2f239b2959ece983195e3ee17a9142bc75b23b0f6733031198648a5f1107ed", size = 6514248 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e5/a5/d4fec9aa9ddda69b6c63dd3ed56b6eabcd2d55bf70c047f9505d9347124f/couchbase-4.3.5-cp313-cp313-macosx_10_15_x86_64.whl", hash = "sha256:4f1462a0a353a13203f21313b17b30a5e13a2f86205b5437b4f5bd86878ad2aa", size = 4775363 },
+    { url = "https://files.pythonhosted.org/packages/0c/76/ac23a4ce4b99500c9ddff1890167b3f69308bbd7f182825ffa8e00e5f451/couchbase-4.3.5-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:d13924326834f81eae2ecb820119bc80460d6b556eb9cad63c5214ddd12e408e", size = 4297936 },
+    { url = "https://files.pythonhosted.org/packages/55/0c/332337ca95961b431bef46c3577edc7272ca16bb0dc0bbd6f68d9b3f6ce4/couchbase-4.3.5-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:c12ffcdbf11ab959c69f6e96f9e2aa9259c84ef9771cd3f10fa3930dade2fb2f", size = 4803523 },
+    { url = "https://files.pythonhosted.org/packages/65/a7/5bd6fa0742bf6034166962a4bc8336b4194f82da298dad6837b3c0a2eaf7/couchbase-4.3.5-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:9deee11a39765455a326fd66d570163543cdaf65dc95e0e44c257dd14febdd3e", size = 5022641 },
+    { url = "https://files.pythonhosted.org/packages/c3/e6/67d19b60656e9c5956b7cf3ef4ca1ea28d34c1339bb77ce58e34cd390894/couchbase-4.3.5-cp313-cp313-musllinux_1_1_x86_64.whl", hash = "sha256:693675658668e83685f6e3d8a969ffb0447a48e74efe6fa77dadca281fa72b8d", size = 5675393 },
+    { url = "https://files.pythonhosted.org/packages/18/43/4eca7ca72cf7b3c5c99afa2336a13cddeb10925dedfaea4db2b9026fb154/couchbase-4.3.5-cp313-cp313-win_amd64.whl", hash = "sha256:3b6aaeb3aea49c2b8f891e3dbaf8e5d73d049badee784bef14c6f24098528db9", size = 4016956 },
+]
+
+[[package]]
 name = "cryptography"
 version = "44.0.2"
 source = { registry = "https://pypi.org/simple" }
@@ -795,6 +809,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "bibtexparser" },
+    { name = "couchbase" },
     { name = "polars" },
     { name = "pydantic" },
     { name = "pymongo", extra = ["encryption", "zstd"] },
@@ -813,6 +828,7 @@ typing = [
 [package.metadata]
 requires-dist = [
     { name = "bibtexparser", git = "https://github.com/sciunto-org/python-bibtexparser?rev=main" },
+    { name = "couchbase", specifier = ">=4.3.5" },
     { name = "polars", specifier = ">=1.25.2" },
     { name = "pydantic", specifier = ">=2.10.6" },
     { name = "pymongo", extras = ["encryption", "zstd"], specifier = ">=4.11.3" },

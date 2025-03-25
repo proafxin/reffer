@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "bibtexparser>=1.4.3",
+    "couchbase>=4.3.5",
     "polars>=1.25.2",
     "pydantic>=2.10.6",
     "pymongo[encryption,zstd]>=4.11.3",
@@ -75,6 +76,10 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "bson"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "couchbase.*"
 ignore_missing_imports = true
 
 [build-system]
