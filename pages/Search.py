@@ -76,8 +76,9 @@ if add_publisher:
 if add_year:
     year = st.number_input(label="Year", min_value=1500)
 
-search = st.button(label="Search")
-if search:
+
+search_bt = st.button(label="Search")
+if search_bt:
     if len(authors) < 1:
         st.stop()
 
@@ -96,5 +97,53 @@ if search:
         query += f" AND year = '{str(year)}'"
     cluster = st.session_state.cluster
     results = cluster.query(query, QueryOptions(metrics=True))
+    data: list[dict[str, str]] = []
     for result in results:
-        st.write(result)
+        data.append(result["l"])
+    st.session_state.data = data
+
+
+def form_citekey(entry: dict[str, str], index: int) -> str:
+    cite_key = "_".join(clean_author(author=entry["author"]))
+    if "year" in entry:
+        cite_key += "_" + entry["year"]
+    cite_key += "_" + str(index)
+
+    return cite_key
+
+
+def export_entry(entry: dict[str, str], index: int) -> str:
+    cite_key = form_citekey(entry=entry, index=index)
+    bibtex = f"@{entry['entry_type']}{{{cite_key},\n"
+    for key, value in entry.items():
+        if key not in ["entry_type", "ID"]:
+            bibtex += f"    {key.upper()} = {{{value}}},\n"
+    bibtex = bibtex.rstrip(",\n") + "\n}\n\n"
+
+    return bibtex
+
+
+if "data" in st.session_state:
+    data = st.session_state.data
+    st.dataframe(data=data)
+    data = st.session_state.data
+    indices = st.multiselect(
+        label="Select entries to export",
+        options=range(1, len(data) + 1),
+        default=range(1, len(data) + 1),
+    )
+    if len(indices) > 0:
+        export_bt = st.button(label="Export")
+        entries: list[str] = []
+        if export_bt:
+            export = [data[i - 1] for i in indices]
+            for i, entry in enumerate(export):
+                entries.append(export_entry(entry=entry, index=i + 1))
+            bib = "\n".join(entries)
+            st.text_area(label="Bib content", value=bib)
+            st.download_button(
+                label="Download as bib file",
+                data=bib,
+                mime="text",
+                file_name="export.bib",
+            )

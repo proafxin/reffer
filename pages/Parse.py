@@ -9,11 +9,11 @@ if "parse" not in st.session_state:
     st.session_state.parse = False
 
 
-def parse():
+def parse() -> None:
     st.session_state.parse = True
 
 
-def show_entry(entry: dict[str, str | list[str]]):
+def show_entry(entry: dict[str, str | list[str]]) -> None:
     for key, value in entry.items():
         st.write(f"**{key}**: {value}")
 
