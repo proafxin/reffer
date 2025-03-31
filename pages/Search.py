@@ -6,11 +6,11 @@ from couchbase.auth import PasswordAuthenticator
 from couchbase.cluster import Cluster
 from couchbase.options import ClusterOptions, ClusterTimeoutOptions, QueryOptions
 
+from api.services.search import collection, dbname, tokenize_author
+
 username = os.environ["MONGO_USER"]
 password = os.environ["MONGO_PASSWORD"]
 host = os.environ["MONGO_HOST"]
-dbname = os.environ["MONGO_DBNAME"]
-collection = os.environ["MONGO_COLLECTION"]
 
 
 if "cluster" not in st.session_state:
@@ -29,18 +29,11 @@ if "couch" not in st.session_state:
     cb_coll = cb.scope(dbname).collection(collection)
     st.session_state.couch = cb_coll
 
+
 authors = set()
 n_author = st.number_input(
     label="Number of authors", min_value=1, max_value=100, value=1
 )
-
-
-def clean_author(author: str) -> list[str]:
-    tokens = author.split(",")
-    author = "".join(tokens)
-    tokens = author.split(" ")
-
-    return [token.strip().lower() for token in tokens if len(token) > 0]
 
 
 for i in range(n_author):
@@ -55,7 +48,7 @@ for i in range(n_author):
     if len(author) < 4:
         st.write("Invalid author name")
     else:
-        clean = clean_author(author=author)
+        clean = tokenize_author(author=author)
         authors.update(clean)
 
 
@@ -67,44 +60,68 @@ with st.sidebar:
     add_publisher = st.checkbox(label="Add Publisher")
     add_year = st.checkbox(label="Add Year")
 
+journal = None
 if add_journal:
     journal = st.text_input(label="Journal")
 
+publisher = None
 if add_publisher:
     publisher = st.text_input(label="Publisher")
 
+year = None
 if add_year:
     year = st.number_input(label="Year", min_value=1500)
 
 
-search_bt = st.button(label="Search")
-if search_bt:
-    if len(authors) < 1:
-        st.stop()
-
-    tokens = list(authors)
+@st.cache_resource
+def search_entries(
+    tokens: list[str],
+    title: str | None,
+    journal: str | None,
+    publisher: str | None,
+    year: int | None,
+):
     query = f"SELECT * FROM default:`{dbname}`.{dbname}.{collection} l"
     query += f" WHERE CONTAINS(LOWER(l.author), '{tokens[0]}')"
     for token in tokens[1:]:
         query += f" AND CONTAINS(LOWER(l.author), '{token}')"
     if title and len(title) > 0:
         query += f" AND CONTAINS(LOWER(l.title), '{title.lower()}')"
-    if add_journal:
+    if journal:
         query += f" AND CONTAINS(LOWER(l.journal), '{journal.lower()}')"
-    if add_publisher:
+    if publisher:
         query += f" AND CONTAINS(LOWER(l.publisher), '{publisher.lower()}')"
-    if add_year:
+    if year and len(str(year)) > 0:
         query += f" AND year = '{str(year)}'"
-    cluster = st.session_state.cluster
+
     results = cluster.query(query, QueryOptions(metrics=True))
     data: list[dict[str, str]] = []
-    for result in results:
-        data.append(result["l"])
+    for i, result in enumerate(results):
+        cur = {"index": str(i + 1)}
+        for key, val in result["l"].items():
+            cur[key] = val
+        data.append(cur)
+
+    return data
+
+
+search_bt = st.button(label="Search")
+if search_bt:
+    cluster = st.session_state.cluster
+
+    if len(authors) < 1:
+        st.stop()
+
+    tokens = list(authors)
+
+    data = search_entries(
+        tokens=tokens, title=title, journal=journal, publisher=publisher, year=year
+    )
     st.session_state.data = data
 
 
 def form_citekey(entry: dict[str, str], index: int) -> str:
-    cite_key = "_".join(clean_author(author=entry["author"]))
+    cite_key = "_".join(tokenize_author(author=entry["author"]))
     if "year" in entry:
         cite_key += "_" + entry["year"]
     cite_key += "_" + str(index)

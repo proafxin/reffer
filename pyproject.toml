@@ -1,6 +1,5 @@
 [project]
 name = "reffer"
-version = "0.1.0"
 description = "A community based open source reference solution."
 readme = "README.md"
 requires-python = ">=3.13"
@@ -8,10 +7,12 @@ dependencies = [
     "bibtexparser>=1.4.3",
     "bson>=0.5.10",
     "couchbase>=4.3.5",
+    "langdetect>=1.0.9",
     "polars>=1.25.2",
     "pydantic>=2.10.6",
     "streamlit>=1.43.2",
 ]
+dynamic = ['version']
 
 [tool.uv.sources]
 bibtexparser = { git = "https://github.com/sciunto-org/python-bibtexparser", rev = "main" }
@@ -82,6 +83,13 @@ ignore_missing_imports = true
 module = "couchbase.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "langdetect.*"
+ignore_missing_imports = true
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatchl.version]
+path = 'Home.py'

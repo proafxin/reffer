@@ -9,6 +9,7 @@ from couchbase.options import ClusterOptions, ClusterTimeoutOptions
 from couchbase.result import MultiMutationResult
 
 from api.services.parser import parse_bibtext
+from api.services.search import search_by_entry
 
 username = os.environ["MONGO_USER"]
 password = os.environ["MONGO_PASSWORD"]
@@ -22,8 +23,12 @@ if "couch" not in st.session_state:
     bucket_name = dbname
     auth = PasswordAuthenticator(username, password)
     timeout_opts = ClusterTimeoutOptions(kv_timeout=timedelta(seconds=10))
-    cluster = Cluster(endpoint, ClusterOptions(auth, timeout_options=timeout_opts))
-    cluster.wait_until_ready(timedelta(seconds=5))
+    if "cluster" in st.session_state:
+        cluster = st.session_state.cluster
+    else:
+        cluster = Cluster(endpoint, ClusterOptions(auth, timeout_options=timeout_opts))
+        cluster.wait_until_ready(timedelta(seconds=5))
+        st.session_state.cluster = cluster
 
     cb = cluster.bucket(dbname)
     cb_coll = cb.scope(dbname).collection(collection)
@@ -33,9 +38,14 @@ if "couch" not in st.session_state:
 bib_file = st.file_uploader(label="Upload bib file", type=["bib"])
 
 
-def write_entries(bibentries: list[dict[str, str]]):
+def write_entries(bibentries: list[dict[str, str]]) -> None:
     documents: dict[str, dict[str, str]] = {}
+    is_existing = 0
     for entry in bibentries:
+        existing = search_by_entry(cluster=st.session_state.cluster, entry=entry)
+        if len(existing) > 0:
+            is_existing += 1
+            continue
         objectid = str(ObjectId())
         documents[objectid] = entry
 
@@ -47,7 +57,12 @@ def write_entries(bibentries: list[dict[str, str]]):
         if key in insert_results.results:
             written += 1
 
-    st.write(f"Successfully uploaded {written} entries!")
+    if written > 0:
+        st.write(f"Successfully uploaded {written} entries!")
+    if is_existing > 0:
+        st.write(
+            f"Skipped writing {is_existing} entries because they already exist in the database."
+        )
 
 
 upload = st.button(label="Upload")
