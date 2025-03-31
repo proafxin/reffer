@@ -2,14 +2,14 @@ import os
 from datetime import timedelta
 
 import streamlit as st
-from bson import ObjectId
 from couchbase.auth import PasswordAuthenticator
 from couchbase.cluster import Cluster
+from couchbase.collection import Collection
 from couchbase.options import ClusterOptions, ClusterTimeoutOptions
-from couchbase.result import MultiMutationResult
+from couchbase.result import MultiGetResult, MultiMutationResult
 
 from api.services.parser import parse_bibtext
-from api.services.search import search_by_entry
+from api.services.search import form_key
 
 username = os.environ["MONGO_USER"]
 password = os.environ["MONGO_PASSWORD"]
@@ -31,7 +31,7 @@ if "couch" not in st.session_state:
         st.session_state.cluster = cluster
 
     cb = cluster.bucket(dbname)
-    cb_coll = cb.scope(dbname).collection(collection)
+    cb_coll: Collection = cb.scope(dbname).collection(collection)
     st.session_state.couch = cb_coll
 
 
@@ -40,28 +40,26 @@ bib_file = st.file_uploader(label="Upload bib file", type=["bib"])
 
 def write_entries(bibentries: list[dict[str, str]]) -> None:
     documents: dict[str, dict[str, str]] = {}
-    is_existing = 0
     for entry in bibentries:
-        existing = search_by_entry(cluster=st.session_state.cluster, entry=entry)
-        if len(existing) > 0:
-            is_existing += 1
-            continue
-        objectid = str(ObjectId())
-        documents[objectid] = entry
+        key = form_key(entry=entry)
+        documents[key] = entry
 
-    cb_coll = st.session_state.couch
+    cb_coll: Collection = st.session_state.couch
+
+    results: MultiGetResult = cb_coll.get_multi(list(documents.keys())).results
+    for key in results:
+        if key in documents:
+            documents.pop(key)
+
     insert_results: MultiMutationResult = cb_coll.insert_multi(documents)
-
-    written = 0
-    for key in documents:
-        if key in insert_results.results:
-            written += 1
-
+    written = len(insert_results.results.keys())
     if written > 0:
-        st.write(f"Successfully uploaded {written} entries!")
-    if is_existing > 0:
+        st.write(f"Added {written} documents in the database.")
+
+    existing = len(bibentries) - written
+    if existing > 0:
         st.write(
-            f"Skipped writing {is_existing} entries because they already exist in the database."
+            f"Skipped writing {existing} entries because they already exist in the database."
         )
 
 

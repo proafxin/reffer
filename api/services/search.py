@@ -3,7 +3,9 @@ import re
 
 import streamlit as st
 from couchbase.cluster import Cluster
+from couchbase.collection import Collection
 from couchbase.options import QueryOptions
+from couchbase.result import MultiGetResult
 
 dbname = os.environ["MONGO_DBNAME"]
 
@@ -28,7 +30,25 @@ def sanitize_text(text: str) -> list[str]:
     text = re.sub(r"\b\w*'\w*\b", " ", text)
     tokens = re.findall(r"\b\w+\b", text)
 
-    return [token.lower() for token in tokens]
+    return sorted([token.lower() for token in tokens])
+
+
+def form_key(entry: dict[str, str]) -> str:
+    author = entry.get("author")
+    title = entry.get("title")
+    year = entry.get("year")
+    journal = entry.get("journal")
+    publisher = entry.get("publisher")
+    fields = author, year, title, journal, publisher
+
+    key = ""
+    for field in fields:
+        if field:
+            tokens = sanitize_text(text=field)
+            if len(tokens) > 0:
+                key += "".join(tokens)
+
+    return str(hash(key))
 
 
 def search_by_fields(
@@ -40,8 +60,6 @@ def search_by_fields(
     publisher: str | None = None,
 ) -> list[dict[str, str]]:
     tokens = sanitize_text(text=author)
-    if len(tokens) < 1:
-        st.write(author)
 
     query = f"SELECT * FROM default:`{dbname}`.{dbname}.{collection} l"
     query += f" WHERE CONTAINS(LOWER(l.author), '{tokens[0]}')"
@@ -70,7 +88,19 @@ def search_by_fields(
     return data
 
 
+def search_by_key(cluster: Cluster, key: str) -> list[dict[str, str]]:
+    cb_coll: Collection = st.session_state.couch
+    result: MultiGetResult = cb_coll.get_multi(
+        ["67e257c274f537222c366422", "67e257c274f537222c366423", "A"]
+    )
+    st.write(result.results)
+
+    return []
+
+
 def search_by_entry(cluster: Cluster, entry: dict[str, str]) -> list[dict[str, str]]:
+    key = form_key(entry=entry)
+    search_by_key(cluster=cluster, key=key)
     author = entry["author"]
     title = entry["title"]
     journal = entry.get("journal")
