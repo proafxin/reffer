@@ -12,7 +12,7 @@ dependencies = [
     "pydantic>=2.10.6",
     "streamlit>=1.43.2",
 ]
-dynamic = ['version']
+version = "1.1"
 
 [tool.uv.sources]
 bibtexparser = { git = "https://github.com/sciunto-org/python-bibtexparser", rev = "main" }
@@ -90,6 +90,3 @@ ignore_missing_imports = true
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[tool.hatchl.version]
-path = 'Home.py'
