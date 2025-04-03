@@ -1,4 +1,32 @@
+import os
+from datetime import timedelta
+
 import streamlit as st
+from couchbase.auth import PasswordAuthenticator
+from couchbase.cluster import Cluster
+from couchbase.options import ClusterOptions, ClusterTimeoutOptions
+
+from api.services.search import collection, dbname
+
+username = os.environ["MONGO_USER"]
+password = os.environ["MONGO_PASSWORD"]
+host = os.environ["MONGO_HOST"]
+
+if "cluster" not in st.session_state:
+    endpoint = host
+    bucket_name = dbname
+    auth = PasswordAuthenticator(username, password)
+    timeout_opts = ClusterTimeoutOptions(kv_timeout=timedelta(seconds=10))
+    cluster = Cluster(endpoint, ClusterOptions(auth, timeout_options=timeout_opts))
+    cluster.wait_until_ready(timedelta(seconds=5))
+    st.session_state.cluster = cluster
+
+
+if "couch" not in st.session_state:
+    cluster = st.session_state.cluster
+    cb = cluster.bucket(dbname)
+    cb_coll = cb.scope(dbname).collection(collection)
+    st.session_state.couch = cb_coll
 
 __VERSION__ = "1.2"
 
@@ -11,9 +39,7 @@ st.write(
 st.subheader(
     ":green[The database only has 8GB storage. Please be responsible in using this]"
 )
-st.subheader(
-    ":red[ If you see any error, just refresh the page and it should work. It's probably just a desync issue.]"
-)
+
 st.subheader("How Does Parsing Work?")
 st.text(
     "Reffer uses the `bibtextparser` python package internally to parse your bib file. It then stores the parsed data in a NoSQL database. You can then search for your references."

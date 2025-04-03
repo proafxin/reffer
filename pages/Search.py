@@ -1,33 +1,13 @@
 import os
-from datetime import timedelta
 
 import streamlit as st
-from couchbase.auth import PasswordAuthenticator
-from couchbase.cluster import Cluster
-from couchbase.options import ClusterOptions, ClusterTimeoutOptions, QueryOptions
+from couchbase.options import QueryOptions
 
 from api.services.search import collection, dbname, tokenize_author
 
 username = os.environ["MONGO_USER"]
 password = os.environ["MONGO_PASSWORD"]
 host = os.environ["MONGO_HOST"]
-
-
-if "cluster" not in st.session_state:
-    endpoint = host
-    bucket_name = dbname
-    auth = PasswordAuthenticator(username, password)
-    timeout_opts = ClusterTimeoutOptions(kv_timeout=timedelta(seconds=10))
-    cluster = Cluster(endpoint, ClusterOptions(auth, timeout_options=timeout_opts))
-    cluster.wait_until_ready(timedelta(seconds=5))
-    st.session_state.cluster = cluster
-
-
-if "couch" not in st.session_state:
-    cluster = st.session_state.cluster
-    cb = cluster.bucket(dbname)
-    cb_coll = cb.scope(dbname).collection(collection)
-    st.session_state.couch = cb_coll
 
 
 authors = set()
